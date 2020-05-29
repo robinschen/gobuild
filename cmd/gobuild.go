@@ -15,7 +15,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/caixw/gobuild"
+	"github.com/robinschen/gobuild"
 )
 
 const mainVersion = "0.7.4"

@@ -40,17 +40,27 @@ dependents:
 
 #### 支持平台:
 
-平台支持依赖 [colors](https://github.com/issue9/term) 与 [fsnotify](https://gopkg.in/fsnotify.v1) 两个包，
+平台支持依赖 [colors](https://github.com/issue9/term) 与 [fsnotify](https://gopkg.in/fsnotify/fsnotify.v1) 两个包，
 目前支持以下平台：windows, linux, macOS, BSD。
 
 
 ### 安装
 
 ```shell
-go get github.com/caixw/gobuild
+go get github.com/robinschen/gobuild
 ```
 
 
 ### 版权
 
 本项目采用 [MIT](https://opensource.org/licenses/MIT) 开源授权许可证，完整的授权说明可在 [LICENSE](LICENSE) 文件中找到。
+
+
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.io,direct
+go env -w GOPRIVATE=gopkg.in/fsnotify
+
+# 设置不走 proxy 的私有仓库，多个用逗号相隔（可选）
+# go env -w GOPRIVATE=*.corp.example.com
+
+# 设置不走 proxy 的私有组织（可选）
