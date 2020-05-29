@@ -1,4 +1,4 @@
-module github.com/penggy/gobuild/v1
+module github.com/robinschen/gobuild/v1
 
 go 1.14
 
