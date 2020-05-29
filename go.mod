@@ -1,4 +1,4 @@
-module github.com/robinschen/gobuild/v1
+module github.com/robinschen/gobuild
 
 go 1.14
 
