@@ -2,83 +2,24 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package gobuild
+package main
 
 import (
 	"io"
+	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/issue9/term/colors"
 )
 
-// Log 日志类型
-type Log struct {
-	Type    int8
-	Message string
-}
-
-// 日志类型
-const (
-	LogTypeSuccess int8 = iota
-	LogTypeInfo
-	LogTypeWarn
-	LogTypeError
-	LogTypeIgnore
-	logTypeSize
+var (
+	succ   = log.New(&logWriter{out: os.Stdout, color: colors.Green, prefix: "[SUCC]"}, "", log.Ltime)
+	info   = log.New(&logWriter{out: os.Stdout, color: colors.Blue, prefix: "[INFO]"}, "", log.Ltime)
+	warn   = log.New(&logWriter{out: os.Stderr, color: colors.Magenta, prefix: "[WARN]"}, "", log.Ltime)
+	erro   = log.New(&logWriter{out: os.Stderr, color: colors.Red, prefix: "[ERRO]"}, "", log.Ltime)
+	ignore = log.New(ioutil.Discard, "", log.Ltime) // 默认情况下不显示此类信息，全部发送到 Discard
 )
-
-// ConsoleLogs 将日志输出到控制台
-type ConsoleLogs struct {
-	Logs       chan *Log
-	showIgnore bool
-	writers    map[int8]*logWriter
-	stop       chan struct{}
-}
-
-// NewConsoleLogs 声明 ConsoleLogs 实例
-func NewConsoleLogs(showIgnore bool) *ConsoleLogs {
-	return newConsoleLogs(showIgnore, os.Stderr, os.Stdout)
-}
-
-func newConsoleLogs(showIgnore bool, err, out io.Writer) *ConsoleLogs {
-	logs := &ConsoleLogs{
-		Logs:       make(chan *Log, 100),
-		showIgnore: showIgnore,
-		writers: map[int8]*logWriter{
-			LogTypeSuccess: newWriter(out, colors.Green, "[SUCC]"),
-			LogTypeInfo:    newWriter(out, colors.Blue, "[INFO]"),
-			LogTypeWarn:    newWriter(err, colors.Magenta, "[WARN]"),
-			LogTypeError:   newWriter(err, colors.Red, "[ERRO]"),
-			LogTypeIgnore:  newWriter(out, colors.Default, "[IGNO]"),
-		},
-	}
-
-	go logs.output()
-
-	return logs
-}
-
-// Stop 停止输出
-func (logs *ConsoleLogs) Stop() {
-	logs.stop <- struct{}{}
-}
-
-func (logs *ConsoleLogs) output() {
-	for {
-		select {
-		case log := <-logs.Logs:
-			if !logs.showIgnore && log.Type == LogTypeIgnore {
-				continue
-			}
-
-			w := logs.writers[log.Type]
-			colors.Fprint(w.out, w.color, colors.Default, w.prefix)
-			colors.Fprintln(w.out, colors.Default, colors.Default, log.Message)
-		case <-logs.stop:
-			return
-		}
-	}
-}
 
 // 带色彩输出的控制台。
 type logWriter struct {
@@ -87,10 +28,7 @@ type logWriter struct {
 	prefix string
 }
 
-func newWriter(out io.Writer, color colors.Color, prefix string) *logWriter {
-	return &logWriter{
-		out:    out,
-		color:  color,
-		prefix: prefix,
-	}
+func (w *logWriter) Write(bs []byte) (int, error) {
+	colors.Fprint(w.out, w.color, colors.Default, w.prefix)
+	return colors.Fprint(w.out, colors.Default, colors.Default, string(bs))
 }
